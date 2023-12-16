@@ -1,0 +1,73 @@
+@{
+    ViewData["Title"] = "Todo App";
+    int counter = 1;
+}
+
+<h1 class="text-center"> Todo App </h1>
+
+<form action="/todo/save" method="post">
+    <div class="input-group flex-nowrap">
+        <span class="input-group-text" id="addon-wrapping">Todo</span>
+        <input name="name" type="text" class="form-control" placeholder="Please write a todo item"
+            aria-describedby="addon-wrapping">
+        <div class="input-group-append">
+            <button type="submit" class="btn btn-outline-secondary" type="button">Save</button>
+        </div>
+    </div>
+</form>
+
+<table class="table border mt-3">
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col" class="text-center">#</th>
+            <th scope="col" style="width: 50%;">Item</th>
+            <th scope="col">Created At</th>
+            <th scope="col">Is Done</th>
+            <th scope="col" class="text-center">Event</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in ViewBag.Items)
+        {
+            <tr>
+                <td class="text-center">@counter</td>
+                <td>@item.Name</td>
+                <td>@item.CreatedAt</td>
+                <td>@item.IsDone</td>
+                <td class="text-center">
+                    <a class="btn btn-sm btn-danger inline" href="/todo/update/@item.Id"> Update </a>
+                    <a class="btn btn-sm btn-danger inline" onclick="change('@item.Id', '@item.Name', '@item.CreatedAt', '@item.IsDone')"> Toggle </a>
+                    <a class="btn btn-sm btn-danger inline" href="/todo/delete/@item.Id"> Delete </a>
+                </td>
+            </tr>
+            counter++;
+        }
+    </tbody>
+</table>
+
+<script>
+    async function change(id, name, time, is_done) {
+        is_done = is_done == "True" ? true : false;
+        const data = new URLSearchParams();
+        data.append('id', id);
+        data.append('name', name);
+        data.append('time', time);
+        data.append('is_done', !is_done);
+
+        await fetch('/todo/update', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: data
+        })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data)
+                if(data.statusCode==200)
+                    console.log("redirection...")
+                    window.location.href = data.redirect
+            })
+            .catch(error => console.error(error));
+    }
+</script>
